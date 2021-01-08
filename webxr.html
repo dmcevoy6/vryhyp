@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="canonical" href="https://www.belfastmet.ac.uk/" />
+    <title>Responsive HTML5 Page Layout Template</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css
+    <meta name="description" content="The home of VR_Y_HYPER">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+	<header>
+		<div id="logo"><img src="logo.png">VR_Y_HYPER</div>
+		<nav>  
+			<ul>
+				<li><a href="index.html">Home</a>
+				<li><a href="uses.html">VR uses</a>
+				<li><a href="service.html">Services</a>
+				<li><a href="hardware.html">VR Hardware</a>
+                                <li><a href="why.html">Why use VR?</a>
+				<li><a href="contact.html">Contact us</a>
+                                <li><a href="webxr.htmn">Web XR</a>
+                                <li>
+<div class ="wrapper">
+   <input type="text" class ="input placeholder="what are you looking for"
+   >
+   <div class="searchbtn">
+       <i class="fas fa-search"></i>
+</div>
+
+			</ul>
+		</nav>
+	</header>
+	<section>
+		<strong>Web XR Explained</strong>
+
+	</section>
+	<section id="pageContent">
+		<main role="main">
+			<article>
+				<h2>What does Web XR mean?</h2>
+				<p>“”The XR stands for “Extended Reality” which intended to include AR, VR and all other immersive technologies such as mobile devices with positional tracking or fixed display with head tracking abilities. </p>
+			</article>
+			<article>
+				<h2>The new standard</h2>
+				<p> WebXR is a new API standard for web developers to create VR or AR applications without having to deal directly with each hardware. Users can use only web browser to start viewing VR/AR content without having to install extra plugins or software. Developers can write the code once and it will work with all devices from different brands (Oculus, Vive, Windows Mixed VR, etc.) </p>
+			</article>
+			<article>
+				<h2>Web XR capabilities</h2>
+				<p> WebXR was introduced in 2018 and now being included in Chrome version 79 (WebVR is also removed) Based on MDN, the keys capabilities of WebXR are as follow (but not limited to) 
+
+Recognize compatible VR/AR devices 
+
+Render 3D scene to the devices at an appropriate frame rate (usually 90 fps for headsets) 
+
+Mirror output to 2D display (eg. monitors) 
+
+Create vectors representing the movement of input controls (ex. move the scene based on head movement) 
+
+Most (if not all) of applications will be using WebGL as 3D rendering engine (Ahem.. Three.js) and Web Audio API for sounds. The output will be rendered into HTML canvas.”  </p>
+			</article>
+			<article>
+				<h2>>Web XR Barebones AR example (Will only work if you have a AR headset connected)</h2>
+				<p>     <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'>
+    <meta name='mobile-web-app-capable' content='yes'>
+    <meta name='apple-mobile-web-app-capable' content='yes'>
+    <link rel='icon' type='image/png' sizes='32x32' href='favicon-32x32.png'>
+    <link rel='icon' type='image/png' sizes='96x96' href='favicon-96x96.png'>
+    <link rel='stylesheet' href='css/common.css'>
+
+    <title>Barebones AR</title>
+  </head>
+  <body>
+    <div id="overlay">
+      <header>
+        <details open>
+          <summary>Barebones WebXR DOM Overlay</summary>
+          <p>
+            This sample demonstrates extremely simple use of an "immersive-ar"
+            session with no library dependencies, with an optional DOM overlay.
+            It doesn't render anything exciting, just draws a rectangle with a
+            slowly changing color to prove it's working.
+            <a class="back" href="./index.html">Back</a>
+          </p>
+          <div id="session-info"></div>
+          <div id="warning-zone"></div>
+          <button id="xr-button" class="barebones-button" disabled>XR not found</button>
+        </details>
+      </header>
+    </div>
+    <main style='text-align: center;'>
+      <p>Click 'Enter AR' to see content</p>
+    </main>
+    <script type="module">
+      // XR globals.
+      let xrButton = document.getElementById('xr-button');
+      let xrSession = null;
+      let xrRefSpace = null;
+
+      // WebGL scene globals.
+      let gl = null;
+
+      function checkSupportedState() {
+        navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
+          if (supported) {
+            xrButton.innerHTML = 'Enter AR';
+          } else {
+            xrButton.innerHTML = 'AR not found';
+          }
+
+          xrButton.disabled = !supported;
+        });
+      }
+
+      function initXR() {
+        if (!window.isSecureContext) {
+          let message = "WebXR unavailable due to insecure context";
+          document.getElementById("warning-zone").innerText = message;
+        }
+
+        if (navigator.xr) {
+          xrButton.addEventListener('click', onButtonClicked);
+          navigator.xr.addEventListener('devicechange', checkSupportedState);
+          checkSupportedState();
+        }
+      }
+
+      function onButtonClicked() {
+        if (!xrSession) {
+            // Ask for an optional DOM Overlay, see https://immersive-web.github.io/dom-overlays/
+            navigator.xr.requestSession('immersive-ar', {
+                optionalFeatures: ['dom-overlay'],
+                domOverlay: {root: document.getElementById('overlay')}
+            }).then(onSessionStarted, onRequestSessionError);
+        } else {
+          xrSession.end();
+        }
+      }
+
+      function onSessionStarted(session) {
+        xrSession = session;
+        xrButton.innerHTML = 'Exit AR';
+
+        // Show which type of DOM Overlay got enabled (if any)
+        if (session.domOverlayState) {
+          document.getElementById('session-info').innerHTML = 'DOM Overlay type: ' + session.domOverlayState.type;
+        }
+
+        session.addEventListener('end', onSessionEnded);
+        let canvas = document.createElement('canvas');
+        gl = canvas.getContext('webgl', {
+          xrCompatible: true
+        });
+        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+        session.requestReferenceSpace('local').then((refSpace) => {
+          xrRefSpace = refSpace;
+          session.requestAnimationFrame(onXRFrame);
+        });
+      }
+
+      function onRequestSessionError(ex) {
+        alert("Failed to start immersive AR session.");
+        console.error(ex.message);
+      }
+
+      function onEndSession(session) {
+        session.end();
+      }
+
+      function onSessionEnded(event) {
+        xrSession = null;
+        xrButton.innerHTML = 'Enter AR';
+        document.getElementById('session-info').innerHTML = '';
+        gl = null;
+      }
+
+      function onXRFrame(t, frame) {
+        let session = frame.session;
+        session.requestAnimationFrame(onXRFrame);
+        let pose = frame.getViewerPose(xrRefSpace);
+
+        if (pose) {
+          gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer);
+
+          // Update the clear color so that we can observe the color in the
+          // headset changing over time. Use a scissor rectangle to keep the AR
+          // scene visible.
+          const width = session.renderState.baseLayer.framebufferWidth;
+          const height = session.renderState.baseLayer.framebufferHeight;
+          gl.enable(gl.SCISSOR_TEST);
+          gl.scissor(width / 4, height / 4, width / 2, height / 2);
+          let time = Date.now();
+          gl.clearColor(Math.cos(time / 2000), Math.cos(time / 4000), Math.cos(time / 6000), 0.5);
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        }
+      }
+
+      initXR();
+    </script></p>
+			</article>
+			<article>
+				<h2>Web XR Barebones VR example (Will only work if you have a VR headset connected)</h2>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'>
+    <meta name='mobile-web-app-capable' content='yes'>
+    <meta name='apple-mobile-web-app-capable' content='yes'>
+    <link rel='icon' type='image/png' sizes='32x32' href='favicon-32x32.png'>
+    <link rel='icon' type='image/png' sizes='96x96' href='favicon-96x96.png'>
+    <link rel='stylesheet' href='css/common.css'>
+
+    <title>Barebones VR</title>
+  </head>
+  <body>
+    <header>
+      <details open>
+        <summary>Barebones VR</summary>
+        <p>
+          This sample demonstrates extremely simple use of an "immersive-vr"
+          session with no library dependencies. It doesn't render anything
+          exciting, just clears your headset's display to a slowly changing
+          color to prove it's working.
+          <a class="back" href="./">Back</a>
+        </p>
+        <button id="xr-button" class="barebones-button" disabled>XR not found</button>
+      </details>
+    </header>
+    <main style='text-align: center;'>
+      <p>Click 'Enter VR' to see content</p> 
+    </main>
+    <script>
+      (function () {
+      'use strict';
+
+      // XR globals.
+      let xrButton = document.getElementById('xr-button');
+      let xrSession = null;
+      let xrRefSpace = null;
+
+      // WebGL scene globals.
+      let gl = null;
+
+      // Checks to see if WebXR is available and, if so, requests an XRDevice
+      // that is connected to the system and tests it to ensure it supports the
+      // desired session options.
+      function initXR() {
+        // Is WebXR available on this UA?
+        if (navigator.xr) {
+          // If the device allows creation of exclusive sessions set it as the
+          // target of the 'Enter XR' button.
+          navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
+            if (supported) {
+              // Updates the button to start an XR session when clicked.
+              xrButton.addEventListener('click', onButtonClicked);
+              xrButton.textContent = 'Enter VR';
+              xrButton.disabled = false;
+            }
+          });
+        }
+      }
+
+      // Called when the user clicks the button to enter XR. If we don't have a
+      // session we'll request one, and if we do have a session we'll end it.
+      function onButtonClicked() {
+        if (!xrSession) {
+          navigator.xr.requestSession('immersive-vr').then(onSessionStarted);
+        } else {
+          xrSession.end();
+        }
+      }
+
+      // Called when we've successfully acquired a XRSession. In response we
+      // will set up the necessary session state and kick off the frame loop.
+      function onSessionStarted(session) {
+        xrSession = session;
+        xrButton.textContent = 'Exit VR';
+
+        // Listen for the sessions 'end' event so we can respond if the user
+        // or UA ends the session for any reason.
+        session.addEventListener('end', onSessionEnded);
+
+        // Create a WebGL context to render with, initialized to be compatible
+        // with the XRDisplay we're presenting to.
+        let canvas = document.createElement('canvas');
+        gl = canvas.getContext('webgl', { xrCompatible: true });
+
+        // Use the new WebGL context to create a XRWebGLLayer and set it as the
+        // sessions baseLayer. This allows any content rendered to the layer to
+        // be displayed on the XRDevice.
+        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+
+        // Get a reference space, which is required for querying poses. In this
+        // case an 'local' reference space means that all poses will be relative
+        // to the location where the XRDevice was first detected.
+        session.requestReferenceSpace('local').then((refSpace) => {
+          xrRefSpace = refSpace;
+
+          // Inform the session that we're ready to begin drawing.
+          session.requestAnimationFrame(onXRFrame);
+        });
+      }
+
+      // Called either when the user has explicitly ended the session by calling
+      // session.end() or when the UA has ended the session for any reason.
+      // At this point the session object is no longer usable and should be
+      // discarded.
+      function onSessionEnded(event) {
+        xrSession = null;
+        xrButton.textContent = 'Enter VR';
+
+        // In this simple case discard the WebGL context too, since we're not
+        // rendering anything else to the screen with it.
+        gl = null;
+      }
+
+      // Called every time the XRSession requests that a new frame be drawn.
+      function onXRFrame(time, frame) {
+        let session = frame.session;
+
+        // Inform the session that we're ready for the next frame.
+        session.requestAnimationFrame(onXRFrame);
+
+        // Get the XRDevice pose relative to the reference space we created
+        // earlier.
+        let pose = frame.getViewerPose(xrRefSpace);
+
+        // Getting the pose may fail if, for example, tracking is lost. So we
+        // have to check to make sure that we got a valid pose before attempting
+        // to render with it. If not in this case we'll just leave the
+        // framebuffer cleared, so tracking loss means the scene will simply
+        // disappear.
+        if (pose) {
+          let glLayer = session.renderState.baseLayer;
+
+          // If we do have a valid pose, bind the WebGL layer's framebuffer,
+          // which is where any content to be displayed on the XRDevice must be
+          // rendered.
+          gl.bindFramebuffer(gl.FRAMEBUFFER, glLayer.framebuffer);
+
+          // Update the clear color so that we can observe the color in the
+          // headset changing over time.
+          gl.clearColor(Math.cos(time / 2000),
+                        Math.cos(time / 4000),
+                        Math.cos(time / 6000), 1.0);
+
+          // Clear the framebuffer
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+          // Normally you'd loop through each of the views reported by the frame
+          // and draw them into the corresponding viewport here, but we're
+          // keeping this sample slim so we're not bothering to draw any
+          // geometry.
+          /*for (let view of pose.views) {
+            let viewport = glLayer.getViewport(view);
+            gl.viewport(viewport.x, viewport.y,
+                        viewport.width, viewport.height);
+            // Draw a scene using view.projectionMatrix as the projection matrix
+            // and view.transform to position the virtual camera. If you need a
+            // view matrix, use view.transform.inverse.matrix.
+          }*/
+        }
+      }
+
+      // Start the XR application.
+      initXR();
+
+    })();
+    </script>
+			</article>
+		</main>
+		<aside>
+		</aside>
+	</section>
+	<footer>
+		<p>&copy; VR_Y_HYPER <a href="https://www.belfastmet.ac.uk/" target="_blank" rel="nofollow">Made with HTML5</a></p>
+		<address>
+			Contact: <a href="mailto:VRYHPER@gmail.com">Mail us</a>
+		</address>
+	</footer>
+
+
+</body>
+
+</html>
